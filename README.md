@@ -1,9 +1,14 @@
 # 🌎 ProxyGPT
- ProxyGPT is a dockerized lightweight OpenAI wrapper using FastAPI. This solution allows you to add custom hourly and daily rate limits to your OpenAI API usage, and share OpenAI access with your team without providing your secret key. This is a more secure option for sharing credentials during development, as OpenAI has yet to provide an API key specific usage cap. You can confine OpenAI API usage through ProxyGPT with hourly and daily rate limits, in addition to only exposing specific endpoints of the OpenAI API. ProxyGPT also allows you the ability to reset or remove your team's access to the OpenAI API for only the services or people using a specific instance of ProxyGPT, rather than needing to reset the original OpenAI API key which could impact other projects if multiple services are using the same key.
+
+## Overview & Features
+
+ProxyGPT is a dockerized lightweight OpenAI wrapper using FastAPI. This solution allows you to add custom hourly and daily rate limits to your OpenAI API usage, and share OpenAI access with your team without providing your secret key. This is a more secure option for sharing credentials during development, as OpenAI has yet to provide an API key specific usage cap. You can confine OpenAI API usage through ProxyGPT with hourly and daily rate limits, in addition to only exposing specific endpoints of the OpenAI API. ProxyGPT also allows you the ability to reset or remove your team's access to the OpenAI API for only the services or people using a specific instance of ProxyGPT, rather than needing to reset the original OpenAI API key which could impact other projects if multiple services are using the same key.
 
 This solution is only recommended in development. In production, the rate limit logic used in this application should be copied to your own application. In addition, you should use seperate OpenAI API keys for different projects and services.
 
-## First, a few notes
+See [Installation](#installation) to get started.
+
+## Details
 
 This project was developed with the goal of creating a simple and lightweight OpenAI wrapper, optimized for short-term development use. Strong documentation, easy customizability, and comprehensive initialization checks were integrated throughout the codebase. As part of the project's simple design, the service employs a local SQLite database, forgoing the use of long-term storage solutions like Docker volumes. Since the sole use of the database is to record the frequency of API usage, facilitating the implementation of rate limiting, long-term data storage is not needed. Previously stored API usage statistics become redundant after the passing of one day or one hour, based upon on the rate limit.
 
@@ -30,9 +35,8 @@ Finally, it should be noted that any errors that arise in the code may be passed
    
 Note that both rate limits can be active and enforced simultaneously.
 
-4. Set the environment variables in .env. See below section on Environment variables.
-5. Run with or without Docker. See below sections on Running with Docker and Running 
-    without Docker.
+4. Set the environment variables in .env. See [Environment Variables](#environment-variables).
+5. Run with or without Docker. See [Running with Docker](#running-with-docker) and [Running without Docker](#running-without-docker).
 
 ## Customization
 
