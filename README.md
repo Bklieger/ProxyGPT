@@ -53,11 +53,11 @@ Optional:
 
 If using hourly rate limit (from settings):
 
-    PROXYGPT_HOURLY_RATE_LIMIT = int: max amount of calls to OpenAI through proxy allowed within a rolling one hour window
+   PROXYGPT_HOURLY_RATE_LIMIT = int: max amount of calls to OpenAI through proxy allowed within a rolling one hour window
 
 If using daily rate limit (from settings):
 
-    PROXYGPT_DAILY_RATE_LIMIT = int: max amount of calls to OpenAI through proxy allowed within a rolling one day window
+   PROXYGPT_DAILY_RATE_LIMIT = int: max amount of calls to OpenAI through proxy allowed within a rolling one day window
 
 ## Running with Docker
 
