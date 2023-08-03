@@ -21,12 +21,17 @@ Finally, it should be noted that any errors that arise in the code may be passed
 
 1. First, download the repository.
 2. Next, configure the settings in settings.py.
+
     USE_HOURLY_RATE_LIMIT (bool)
+   
     USE_DAILY_RATE_LIMIT (bool)
-    INSECURE_DEBUG (bool) 
+   
+    INSECURE_DEBUG (bool)
+   
 Note that both rate limits can be active and enforced simultaneously.
-3. Set the environment variables in .env. See below section on Environment variables.
-4. Run with or without Docker. See below sections on Running with Docker and Running 
+
+4. Set the environment variables in .env. See below section on Environment variables.
+5. Run with or without Docker. See below sections on Running with Docker and Running 
     without Docker.
 
 ## Customization
@@ -38,14 +43,20 @@ In order to customize ProxyGPT with new endpoints, simply add them in main.py ba
 ## Environment variables
 
 Required:
+
 OPENAI_API_KEY = str: Your secure OpenAI API Key
+
 PROXYGPT_API_KEY = str: Your strong custom API key for the proxy
 
+
 Optional:
+
 If using hourly rate limit (from settings):
+
     PROXYGPT_HOURLY_RATE_LIMIT = int: max amount of calls to OpenAI through proxy allowed within a rolling one hour window
 
 If using daily rate limit (from settings):
+
     PROXYGPT_DAILY_RATE_LIMIT = int: max amount of calls to OpenAI through proxy allowed within a rolling one day window
 
 ## Running with Docker
@@ -111,4 +122,7 @@ v0.1.0-beta:
 ## Future Features
 
 Allow passing in multiple API keys for PROXYGPT_API_KEY
+
 Add CORS origins restriction option through middleware
+
+Allow creation of multiple API keys with different rate limits linked in database or in API key itself
