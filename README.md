@@ -99,7 +99,7 @@ pip install -r requirements.txt
 ~~~
 touch .env
 ~~~
-
+Add the variables to the .env file. See example.env and [Environment Variables](#environment-variables).
 ~~~
 export $(cat .env | xargs)
 ~~~
