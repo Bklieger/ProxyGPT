@@ -1,4 +1,5 @@
 # 🌎 ProxyGPT
+![Product Baner](assets/ProxyGPTbanner.png)
 
 ## Overview & Features
 
@@ -122,6 +123,9 @@ ProxyGPT is now online, and can be accessed at http://127.0.0.1:8000. Visit http
 
 v0.1.0-beta:
 - Initialized Project for Release
+
+v0.1.0:
+- Application Tested in Beta, README.md updated
 
 ## Future Features
 

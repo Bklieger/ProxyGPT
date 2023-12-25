@@ -2,7 +2,7 @@
 Main.py file for ProxyGPT. This file contains the main code for the API.
 
 Author: Benjamin Klieger
-Version: 0.1.0-beta
+Version: 0.1.0
 Date: 2023-08-02
 License: MIT
 """
@@ -52,7 +52,7 @@ if USE_HOURLY_RATE_LIMIT==None or USE_DAILY_RATE_LIMIT==None or INSECURE_DEBUG==
 app = FastAPI(
     title="ProxyGPT",
     description="Lightweight wrapper for OpenAI python library. Add custom hourly and daily rate limits to API usage, and share OpenAI access with your development team without providing your secret key.",
-    version="v0.1.0-beta",
+    version="v0.1.0",
 )
 
 # ------------- [Initialization: Env] -------------
