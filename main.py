@@ -57,18 +57,48 @@ app = FastAPI(
 
 # ------------- [Initialization: Env] -------------
 
+# Set minimum length for secure key
+MIN_LENGTH_FOR_SECURE_KEY = 5
+
+# Set ProxyGPT API key securely from environment variable, either singular key or multiple keys
+proxygpt_api_key = os.getenv("PROXYGPT_API_KEY")
+proxygpt_api_keys = os.getenv("PROXYGPT_API_KEYS")
+
+if proxygpt_api_keys is not None:
+    # Get list of keys with comma seperated keys
+    proxygpt_api_keys = proxygpt_api_keys.split(",")
+
+# Initialization check
+initialization_transcript = ""
+critical_exist = False
+
+# Check if the singular key is set
+if proxygpt_api_key is None and proxygpt_api_keys is None:
+    initialization_transcript += red_critical(f'[Critical] PROXYGPT_API_KEY environment variable is not set. (Line {inspect.currentframe().f_lineno} in {os.path.basename(__file__)})\n')
+    critical_exist = True
+
+# If the singular key is set, check if it is strong
+elif proxygpt_api_key is not None and len(proxygpt_api_key) < MIN_LENGTH_FOR_SECURE_KEY:
+    initialization_transcript+= yellow_warning(f'[Warning] PROXYGPT_API_KEY environment variable is too short to be secure. (Line {inspect.currentframe().f_lineno} in {os.path.basename(__file__)})\n')
+
+# Check if multiple keys are set, and if so, check if there exist more than 0 keys
+elif proxygpt_api_keys is not None and len(proxygpt_api_keys) == 0:
+    initialization_transcript += red_critical(f'[Critical] PROXYGPT_API_KEYS environment variable is set, but no keys were parsed. (Line {inspect.currentframe().f_lineno} in {os.path.basename(__file__)})\n')
+    critical_exist = True
+
+# Check if multiple keys are set, and if so, check if they are strong
+elif proxygpt_api_keys is not None:
+    for key in proxygpt_api_keys:
+        if len(key) < MIN_LENGTH_FOR_SECURE_KEY:
+            initialization_transcript += yellow_warning(f'[Warning] PROXYGPT_API_KEYS environment variable contains a key that is too short to be secure. (Line {inspect.currentframe().f_lineno} in {os.path.basename(__file__)})\n')
+
 # Set OpenAI API key securely from environment variable
 openai.api_key = os.getenv("OPENAI_API_KEY")
-proxygpt_api_key = os.getenv("PROXYGPT_API_KEY")
 
 if USE_HOURLY_RATE_LIMIT:
     hourly_rate_limit = (os.getenv("PROXYGPT_HOURLY_RATE_LIMIT"))
 if USE_DAILY_RATE_LIMIT:
     daily_rate_limit = (os.getenv("PROXYGPT_DAILY_RATE_LIMIT"))
-
-# Initialization check
-initialization_transcript = ""
-critical_exist = False
 
 # Check if the key is set
 if openai.api_key is None:
@@ -82,15 +112,6 @@ elif len(openai.api_key) <5:
 elif openai.api_key.startswith("sk-")==False:
     initialization_transcript += red_critical(f'[Critical] OPENAI_API_KEY environment variable is not a valid secret key. (Line {inspect.currentframe().f_lineno} in {os.path.basename(__file__)})\n')
     critical_exist = True
-
-# Check if the key is set
-if proxygpt_api_key is None:
-    initialization_transcript += red_critical(f'[Critical] PROXYGPT_API_KEY environment variable is not set. (Line {inspect.currentframe().f_lineno} in {os.path.basename(__file__)})\n')
-    critical_exist = True
-
-# If the key is set, check if it is strong
-elif len(proxygpt_api_key) <5:
-    initialization_transcript+= yellow_warning(f'[Warning] PROXYGPT_API_KEY environment variable is too short to be secure. (Line {inspect.currentframe().f_lineno} in {os.path.basename(__file__)})\n')
 
 # Check if the rate limit(s) are set correctly
 if USE_HOURLY_RATE_LIMIT:
@@ -201,12 +222,21 @@ bearer_scheme = HTTPBearer()
 
 # Define validation function for API key
 def valid_api_key(api_key_header: APIKey = Depends(bearer_scheme)):
-    # Check if API key is valid
-    if api_key_header.credentials != proxygpt_api_key:
-        raise HTTPException(
-            status_code=400, detail="Invalid API key"
-        )
-    return api_key_header.credentials
+
+    if proxygpt_api_key:
+        # Check if API key is valid
+        if api_key_header.credentials != proxygpt_api_key:
+            raise HTTPException(
+                status_code=400, detail="Invalid API key"
+            )
+        return api_key_header.credentials
+    else:
+        # Check if API key is valid
+        if api_key_header.credentials not in proxygpt_api_keys:
+            raise HTTPException(
+                status_code=400, detail="Invalid API key"
+            )
+        return api_key_header.credentials
 
 # Define validation function for API key with rate limit
 def valid_api_key_rate_limit(api_key_header: APIKey = Depends(bearer_scheme)):
@@ -214,12 +244,20 @@ def valid_api_key_rate_limit(api_key_header: APIKey = Depends(bearer_scheme)):
     if check_rate_limit() == False:
         raise HTTPException(status_code=429, detail="Rate limit reached. Try again later. See /ratelimit to view status and settings.")
 
-    # Check if API key is valid
-    if api_key_header.credentials != proxygpt_api_key:
-        raise HTTPException(
-            status_code=400, detail="Invalid API key"
-        )
-    return api_key_header.credentials
+    if proxygpt_api_key:
+        # Check if API key is valid
+        if api_key_header.credentials != proxygpt_api_key:
+            raise HTTPException(
+                status_code=400, detail="Invalid API key"
+            )
+        return api_key_header.credentials
+    else:
+        # Check if API key is valid
+        if api_key_header.credentials not in proxygpt_api_keys:
+            raise HTTPException(
+                status_code=400, detail="Invalid API key"
+            )
+        return api_key_header.credentials
 
 
 # ------------- [Routes and Endpoints] -------------
