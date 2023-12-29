@@ -1,5 +1,5 @@
 # 🌎 ProxyGPT
-![Product Baner](assets/ProxyGPTbanner.png)
+![Product Banner](assets/ProxyGPTbanner.png)
 
 ## Overview & Features
 
