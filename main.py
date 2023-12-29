@@ -262,7 +262,6 @@ def valid_api_key_rate_limit(api_key_header: APIKey = Depends(bearer_scheme)):
 
 # ------------- [Routes and Endpoints] -------------
 
-# Define a route for the root path
 @app.post('/api/openai/completions/gpt3')
 async def get_openai_gpt3_completion(message: List[ChatMessage], api_key: str = Depends(valid_api_key_rate_limit)):
     """
