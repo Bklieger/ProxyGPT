@@ -127,10 +127,17 @@ v0.1.0-beta:
 v0.1.0:
 - Application Tested in Beta, README.md updated
 
+v0.1.1-beta:
+- Allow passing in multiple API keys for PROXYGPT_API_KEY
+
 ## Future Features
 
-Allow passing in multiple API keys for PROXYGPT_API_KEY
+Allow multiple API keys with different rate limits in PROXYGPT_API_KEY
+
+Create graphics module for optionally recording and viewing statistics
+
+Allow use of production database
 
 Add CORS origins restriction option through middleware
 
-Allow creation of multiple API keys with different rate limits linked in database or in API key itself
+Convert endpoints to async so logging and returning data can be executed concurrently
