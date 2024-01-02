@@ -141,3 +141,5 @@ Allow use of production database
 Add CORS origins restriction option through middleware
 
 Convert endpoints to async so logging and returning data can be executed concurrently
+
+Add Docker Volume integration for long term database
