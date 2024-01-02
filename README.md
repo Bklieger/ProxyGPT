@@ -132,6 +132,8 @@ v0.1.1-beta:
 
 ## Future Features
 
+Add unit tests to entire codebase
+
 Allow multiple API keys with different rate limits in PROXYGPT_API_KEY
 
 Create graphics module for optionally recording and viewing statistics
@@ -143,3 +145,5 @@ Add CORS origins restriction option through middleware
 Convert endpoints to async so logging and returning data can be executed concurrently
 
 Add Docker Volume integration for long term database
+
+Add further abstraction for increased customizability (such as adding database name to settings.py)
