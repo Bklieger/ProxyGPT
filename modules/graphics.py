@@ -3,6 +3,6 @@ Graphics.py file for ProxyGPT. This file contains the graphics module code for t
 
 Author: Benjamin Klieger
 Version: 0.1.1-beta
-Date: 2024-01-01
+Date: 2024-01-05
 License: MIT
 """

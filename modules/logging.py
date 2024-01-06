@@ -100,7 +100,7 @@ def insert_api_log(response_time: float, response_code: int, endpoint: str, requ
 
 
 # Function to returning the API logs
-def get_api_logs(start_time=None: int, end_time=None: int, last_n=None: int) -> List[BaseModel]:
+def get_api_logs(start_time: int = None, end_time: int = None, last_n: int = None) -> List[BaseModel]:
     """
     This function returns a list of API logs from the SQLite database.
 
@@ -149,3 +149,29 @@ def get_api_logs(start_time=None: int, end_time=None: int, last_n=None: int) -> 
     
     # Return the results
     return results
+
+# Function for transforming list of API logs into list of dictionaries
+def transform_api_logs(logs: List[BaseModel]) -> List[BaseModel]:
+    """
+    This function transforms a list of API logs into a list of dictionaries.
+
+    Args:  
+        logs (List[BaseModel]): A list of API logs.
+
+    Returns:
+        List[BaseModel]: A list of API logs.
+    """
+
+    transformed_logs = []
+    for log in logs:
+        transformed_log = {
+            "timestamp": log[0],
+            "response_time": log[1],
+            "response_code": log[2],
+            "endpoint": log[3],
+            "request": log[4],
+            "response": log[5]
+        }
+        transformed_logs.append(transformed_log)
+
+    return transformed_logs
