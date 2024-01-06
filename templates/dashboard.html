@@ -1,0 +1,198 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>API Dashboard</title>
+    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+<body class="bg-gray-100">
+    <div class="container mx-auto p-4">
+        <h1 class="text-2xl font-bold text-gray-800 mb-4">API Dashboard</h1>
+
+        <!-- API Key Input -->
+        <div id="apiKeyInputContainer">
+            <input type="text" id="apiKeyInput" placeholder="Enter API Key" class="border p-2 mr-2">
+            <button onclick="fetchAndDisplayData()" class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded">Submit</button>
+        </div>
+
+        <!-- Chart and Table Container (Initially hidden) -->
+        <div id="dataContainer" style="display: none;">
+            <!-- Chart Container -->
+            <div class="flex justify-center items-center mb-8">
+                <div class="w-full"> <!-- Adjust the max width as needed -->
+                    <canvas id="apiChart"></canvas>
+                </div>
+            </div>
+
+            <!-- Logs Table -->
+            <div class="overflow-x-auto">
+                <table class="min-w-full bg-white">
+                    <thead>
+                        <tr>
+                            <th class="py-2 px-4 bg-gray-200 font-bold uppercase text-sm text-gray-600 border-b border-gray-200">Timestamp</th>
+                            <th class="py-2 px-4 bg-gray-200 font-bold uppercase text-sm text-gray-600 border-b border-gray-200">Response Time</th>
+                            <th class="py-2 px-4 bg-gray-200 font-bold uppercase text-sm text-gray-600 border-b border-gray-200">Response Code</th>
+                            <th class="py-2 px-4 bg-gray-200 font-bold uppercase text-sm text-gray-600 border-b border-gray-200">Endpoint</th>
+                            <th class="py-2 px-4 bg-gray-200 font-bold uppercase text-sm text-gray-600 border-b border-gray-200">Request</th>
+                            <th class="py-2 px-4 bg-gray-200 font-bold uppercase text-sm text-gray-600 border-b border-gray-200">Response</th>
+                        </tr>
+                    </thead>
+                    <tbody id="log-table-body">
+                        <!-- Log rows will be inserted here -->
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        async function fetchAndDisplayData() {
+            const apiKey = document.getElementById('apiKeyInput').value;
+            if (!apiKey) {
+                alert('Please enter the API key.');
+                return;
+            }
+
+            try {
+                const response = await fetch('/dashboard-data', {
+                    headers: {
+                        'Authorization': `Bearer ${apiKey}`
+                    }
+                });
+
+                if (!response.ok) {
+                    throw new Error('Invalid API Key or error fetching data');
+                }
+
+                const apiLogs = await response.json();
+                const chartData = prepareChartData(apiLogs);
+                renderChart(chartData);
+
+                const logTableBody = document.getElementById('log-table-body');
+                logTableBody.innerHTML = ''; 
+                apiLogs.forEach(log => {
+                    logTableBody.appendChild(createLogRow(log));
+                });
+
+                document.getElementById('apiKeyInputContainer').style.display = 'none';
+                document.getElementById('dataContainer').style.display = 'block';
+            } catch (error) {
+                console.error('Error:', error);
+                alert('Failed to load data. Please check the API key.');
+            }
+        }
+
+
+        function getColorForResponseCode(code) {
+            if (code >= 200 && code < 300) {
+                return 'rgba(76, 175, 80, 0.7)';  // Shades of green for 2XX codes
+            } else if (code >= 400 && code < 500) {
+                return 'rgba(255, 87, 34, 0.7)';  // Shades of red for 4XX codes
+            } else if (code >= 500) {
+                return 'rgba(244, 67, 54, 0.7)';  // Darker red for 5XX codes
+            }
+            return 'rgba(158, 158, 158, 0.7)';    // Grey for other codes
+        }
+
+
+        function prepareChartData(logs) {
+            const endDate = new Date();
+            const startDate = new Date();
+            startDate.setDate(endDate.getDate() - 7);
+
+            let groupedLogs = {};
+            logs.forEach(log => {
+                const logDate = new Date(log.timestamp * 1000);
+                if (logDate >= startDate && logDate <= endDate) {
+                    const hour = `${logDate.getFullYear()}-${logDate.getMonth() + 1}-${logDate.getDate()} ${logDate.getHours()}:00`;
+                    const code = log.response_code;
+
+                    if (!groupedLogs[hour]) {
+                        groupedLogs[hour] = {};
+                    }
+
+                    if (!groupedLogs[hour][code]) {
+                        groupedLogs[hour][code] = 0;
+                    }
+
+                    groupedLogs[hour][code]++;
+                }
+            });
+
+            let labels = [];
+            let datasets = {};
+            for (let hour in groupedLogs) {
+                labels.push(hour);
+                for (let code in groupedLogs[hour]) {
+                    if (!datasets[code]) {
+                        datasets[code] = {
+                            label: `Response Code ${code}`,
+                            data: [],
+                            fill: false,
+                            backgroundColor: getColorForResponseCode(parseInt(code)), // Assign color based on response code
+                            tension: 0.1
+                        };
+                    }
+                    while (datasets[code].data.length < labels.length - 1) {
+                        datasets[code].data.push(0);
+                    }
+                    datasets[code].data.push(groupedLogs[hour][code]);
+                }
+            }
+
+            // Sort labels and adjust datasets accordingly
+            labels.sort();
+            for (let code in datasets) {
+                let sortedData = [];
+                labels.forEach(label => {
+                    let index = groupedLogs[label] && groupedLogs[label][code] ? groupedLogs[label][code] : 0;
+                    sortedData.push(index);
+                });
+                datasets[code].data = sortedData;
+            }
+
+            return {
+                labels: labels,
+                datasets: Object.values(datasets)
+            };
+        }
+
+
+        function renderChart(data) {
+            const ctx = document.getElementById('apiChart').getContext('2d');
+            new Chart(ctx, {
+                type: 'bar',
+                data: data,
+                options: {
+                    scales: {
+                        y: {
+                            beginAtZero: true
+                        }
+                    }
+                }
+            });
+        }
+
+        function createLogRow(log) {
+            const row = document.createElement('tr');
+            row.innerHTML = `
+                <td class="py-2 px-4 border-b border-gray-200">${new Date(log.timestamp * 1000).toLocaleString()}</td>
+                <td class="py-2 px-4 border-b border-gray-200">${log.response_time}ms</td>
+                <td class="py-2 px-4 border-b border-gray-200">${log.response_code}</td>
+                <td class="py-2 px-4 border-b border-gray-200">${log.endpoint}</td>
+                <td class="py-2 px-4 border-b border-gray-200">${log.request}</td>
+                <td class="py-2 px-4 border-b border-gray-200">${log.response}</td>
+            `;
+            return row;
+        }
+    </script>
+</body>
+</html>
+
+
+
+
+
+

@@ -16,7 +16,6 @@ h11==0.14.0
 idna==3.4
 importlib-metadata==6.7.0
 multidict==6.0.4
-openai==0.27.8
 packaging==23.1
 pydantic==2.1.1
 pydantic-core==2.4.0

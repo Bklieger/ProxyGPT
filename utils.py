@@ -2,7 +2,7 @@
 Utils.py file for ProxyGPT. This file contains utility functions for ProxyGPT project.
 
 Author: Benjamin Klieger
-Version: 0.1.0
+Version: 0.1.1-beta
 Date: 2023-08-02
 License: MIT
 """

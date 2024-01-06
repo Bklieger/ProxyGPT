@@ -2,8 +2,8 @@
 Main.py file for ProxyGPT. This file contains the main code for the API.
 
 Author: Benjamin Klieger
-Version: 0.1.0
-Date: 2023-08-02
+Version: 0.1.1-beta
+Date: 2024-01-05
 License: MIT
 """
 
@@ -25,8 +25,8 @@ import os
 # Required for inspecting code
 import inspect
 
-# Import required libraries from OpenAI for API functionality
-import openai
+# Import requests for making API calls
+import requests
 
 # Required for rate limiting with database and timestamps
 import sqlite3
@@ -42,8 +42,35 @@ from utils import *
 from settings import *
 
 # Check if settings are properly imported and set, raise exception if not
-if USE_HOURLY_RATE_LIMIT==None or USE_DAILY_RATE_LIMIT==None or INSECURE_DEBUG==None:
+if USE_HOURLY_RATE_LIMIT==None or USE_DAILY_RATE_LIMIT==None or INSECURE_DEBUG==None or INSTALLED_MODULES==None:
     raise Exception("One or more of the settings are not set or have been removed. They are required for operation of ProxyGPT, unless the code has been modified.")
+
+# Import the modules
+if "graphics" in INSTALLED_MODULES:
+    # Import graphics module
+    from modules.graphics import *
+
+    from fastapi.templating import Jinja2Templates
+    from fastapi.responses import HTMLResponse
+    from fastapi import Request
+
+    templates = Jinja2Templates(directory="templates")
+
+    graphics_installed_bool = True
+else:
+    graphics_installed_bool = False
+
+
+if "logging" in INSTALLED_MODULES:
+    # Import logging module
+    from modules.logging import *
+
+    # Import time which is needed
+    import time
+
+    logging_installed_bool = True
+else:
+    logging_installed_bool = False
 
 
 # ------------- [Initialization: App] -------------
@@ -52,7 +79,7 @@ if USE_HOURLY_RATE_LIMIT==None or USE_DAILY_RATE_LIMIT==None or INSECURE_DEBUG==
 app = FastAPI(
     title="ProxyGPT",
     description="Lightweight wrapper for OpenAI python library. Add custom hourly and daily rate limits to API usage, and share OpenAI access with your development team without providing your secret key.",
-    version="v0.1.0",
+    version="v0.1.1-beta",
 )
 
 # ------------- [Initialization: Env] -------------
@@ -93,7 +120,7 @@ elif proxygpt_api_keys is not None:
             initialization_transcript += yellow_warning(f'[Warning] PROXYGPT_API_KEYS environment variable contains a key that is too short to be secure. (Line {inspect.currentframe().f_lineno} in {os.path.basename(__file__)})\n')
 
 # Set OpenAI API key securely from environment variable
-openai.api_key = os.getenv("OPENAI_API_KEY")
+openai_api_key = os.getenv("OPENAI_API_KEY")
 
 if USE_HOURLY_RATE_LIMIT:
     hourly_rate_limit = (os.getenv("PROXYGPT_HOURLY_RATE_LIMIT"))
@@ -101,15 +128,15 @@ if USE_DAILY_RATE_LIMIT:
     daily_rate_limit = (os.getenv("PROXYGPT_DAILY_RATE_LIMIT"))
 
 # Check if the key is set
-if openai.api_key is None:
+if openai_api_key is None:
     initialization_transcript += red_critical(f'[Critical] OPENAI_API_KEY environment variable is not set. (Line {inspect.currentframe().f_lineno} in {os.path.basename(__file__)})\n')
     critical_exist = True
 
 # If the key is set, check if it is valid
-elif len(openai.api_key) <5:
+elif len(openai_api_key) <5:
     initialization_transcript += red_critical(f'[Critical] OPENAI_API_KEY environment variable is too short to be a working key. (Line {inspect.currentframe().f_lineno} in {os.path.basename(__file__)})\n')
     critical_exist = True
-elif openai.api_key.startswith("sk-")==False:
+elif openai_api_key.startswith("sk-")==False:
     initialization_transcript += red_critical(f'[Critical] OPENAI_API_KEY environment variable is not a valid secret key. (Line {inspect.currentframe().f_lineno} in {os.path.basename(__file__)})\n')
     critical_exist = True
 
@@ -259,15 +286,15 @@ def valid_api_key_rate_limit(api_key_header: APIKey = Depends(bearer_scheme)):
             )
         return api_key_header.credentials
 
-
 # ------------- [Routes and Endpoints] -------------
 
 @app.post('/api/openai/completions/gpt3')
-async def get_openai_gpt3_completion(message: List[ChatMessage], api_key: str = Depends(valid_api_key_rate_limit)):
+async def get_openai_gpt3_completion(message: List[ChatMessage], temperature: float, api_key: str = Depends(valid_api_key_rate_limit)):
     """
     This endpoint allows you to interact with OpenAI's GPT-3 model for Chat Completion.
 
     - **message**: A list of message objects. Each object should have a "role" (which can be "system", "user", or "assistant") and a "content" (which is the actual content of the message).
+    - **temperature**: The temperature to use for the model's response.
 
     The endpoint will return a string containing the model's response.
     """
@@ -276,15 +303,27 @@ async def get_openai_gpt3_completion(message: List[ChatMessage], api_key: str = 
         # Log API usage. Note, you could move this to the end of the endpoint and check the response content if you want to log only successful requests.
         log_api_usage()
 
-        # Send request to OpenAI. You could alternatively use the API directly using requests library, and send the status code and response content to the client.
-        response = openai.ChatCompletion.create(
-          model="gpt-3.5-turbo",
-          messages=[
-                {"role": msg.role, "content": msg.content} for msg in message
-            ]
-        )
-        content = response.choices[0].message['content']
-        return JSONResponse(status_code=200, content={"message": content})
+        # Log time if logging installed.
+        if logging_installed_bool:
+            start_time = time.time()
+
+        # Send request to OpenAI
+        url = "https://api.openai.com/v1/chat/completions"
+        payload = { "model": "gpt-3.5-turbo", "messages": [{"role": msg.role, "content": msg.content} for msg in message], "temperature": temperature }
+
+        headers = {
+            "content-type": "application/json",
+            "Authorization": "Bearer " + str(openai_api_key)
+        }
+
+        # Send the request
+        response = requests.post(url, json=payload, headers=headers)
+        
+        # Log API results if logging installed.
+        if logging_installed_bool:
+            insert_api_log(response_time=round((time.time()-start_time)*1000),response_code=response.status_code,endpoint=url,request=str(payload),response_str=response.text)
+
+        return JSONResponse(status_code=200, content={"message": response.json()})
     except Exception as e:
         if INSECURE_DEBUG:
             return JSONResponse(status_code=500, content={"error": str(e)})
@@ -312,3 +351,29 @@ async def get_ratelimit(api_key: str = Depends(valid_api_key)):
         json_to_return = {"error": "Rate limit is not enabled."}
 
     return JSONResponse(status_code=200, content=json_to_return)
+
+
+if graphics_installed_bool:
+    @app.get("/dashboard", response_class=HTMLResponse)
+    async def get_dashboard(request: Request):
+        """
+        This endpoint allows you to view the dashboard of ProxyGPT.
+        """
+
+        return templates.TemplateResponse(
+        "dashboard.html",
+        {"request": request})
+
+    @app.get("/dashboard-data")
+    async def get_dashboard_data(api_key: str = Depends(valid_api_key)):
+        """
+        This endpoint allows you to view the dashboard data of ProxyGPT.
+        """
+        #TODO: clean logs to remove injection vulnerabilities
+
+        log_results = transform_api_logs(get_api_logs())
+
+        # Reverse
+        log_results.reverse()
+
+        return JSONResponse(status_code=200, content=log_results)

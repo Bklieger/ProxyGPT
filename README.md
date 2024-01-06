@@ -9,6 +9,13 @@ The use of ProxyGPT is only recommended in development. In production, the rate 
 
 See [Installation](#installation) to get started.
 
+## Modules
+
+ProxyGPT comes with several modules, which are additional features beyond a simple proxy. These include logging and graphics, which allows full logging of the request and response for the API calls, and produces a dashboard for analyzing the results of the API calls.
+
+![Graphics Module](assets/graphics_module.png)
+
+
 ## Installation
 
 1. First, download the repository.
@@ -20,7 +27,7 @@ See [Installation](#installation) to get started.
    
     INSECURE_DEBUG (bool)
    
-Note that both rate limits can be active and enforced simultaneously.
+Note that both rate limits can be active and enforced simultaneously. There is also an INSTALLED_MODULES array which can be modified to remove modules that power unwanted features. 
 
 4. Set the environment variables in .env. See [Environment Variables](#environment-variables).
 5. Run with or without Docker. See [Running with Docker](#running-with-docker) and [Running without Docker](#running-without-docker).
@@ -33,7 +40,7 @@ In order to customize ProxyGPT with new endpoints, simply add them in main.py ba
 
 ## Details
 
-This project was developed with the goal of creating a simple and lightweight OpenAI wrapper, optimized for short-term development use. Strong documentation, easy customizability, and comprehensive initialization checks were integrated throughout the codebase. As part of the project's simple design, the service employs a local SQLite database, forgoing the use of long-term storage solutions like Docker volumes. Since the sole use of the database is to record the frequency of API usage, facilitating the implementation of rate limiting, long-term data storage is not needed. Previously stored API usage statistics become redundant after the passing of one day or one hour, based upon on the rate limit.
+This project was developed with the goal of creating a simple and lightweight OpenAI wrapper, with basic yet powerful logging, rate limiting, and graphing tools. Strong documentation, easy customizability, and comprehensive initialization checks were integrated throughout the codebase. As part of the project's simple design, the service employs a local SQLite database, forgoing the use of long-term storage solutions like Docker volumes. This can be customized as you desire.
 
 It's important to understand that the rate limits currently apply for any calls to OpenAI, meaning all calls will increase the rate count, irrespective of whether or not they were successful. This is simple to change if you wish, and just requires different placement of the log function to after validation of the response from the OpenAI API.
 
@@ -127,10 +134,23 @@ v0.1.0-beta:
 v0.1.0:
 - Application Tested in Beta, README.md updated
 
+v0.1.1-beta:
+- Allow passing in multiple API keys for PROXYGPT_API_KEY
+
 ## Future Features
 
-Allow passing in multiple API keys for PROXYGPT_API_KEY
+Add unit tests to entire codebase
+
+Allow multiple API keys with different rate limits in PROXYGPT_API_KEY
+
+Create graphics module for optionally recording and viewing statistics
+
+Allow use of production database
 
 Add CORS origins restriction option through middleware
 
-Allow creation of multiple API keys with different rate limits linked in database or in API key itself
+Convert endpoints to async so logging and returning data can be executed concurrently
+
+Add Docker Volume integration for long term database
+
+Add further abstraction for increased customizability (such as adding database name to settings.py)
