@@ -373,4 +373,7 @@ if graphics_installed_bool:
 
         log_results = transform_api_logs(get_api_logs())
 
+        # Reverse
+        log_results.reverse()
+
         return JSONResponse(status_code=200, content=log_results)
