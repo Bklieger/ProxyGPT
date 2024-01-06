@@ -3,7 +3,7 @@ Settings.py file for ProxyGPT. This file contains the settings for the API.
 
 Author: Benjamin Klieger
 Version: 0.1.1-beta
-Date: 2023-08-02
+Date: 2024-01-05
 License: MIT
 """
 
@@ -21,3 +21,20 @@ exposing any secret variables stored on the server side to client.
 """
 INSECURE_DEBUG = True
 
+"""
+Set the installed and used modules here. Removing a module from this list 
+will skip the import in main.py. Note some modules are dependent on others.
+"""
+INSTALLED_MODULES = ["graphics","logging"]
+
+
+# ------------- [Checks] -------------
+
+# Check the dependencies of the installed modules
+dependencies = {"graphics":["logging"],"logging":[]}
+
+# Add the dependencies
+for module in INSTALLED_MODULES:
+    for dependency in dependencies[module]:
+        if dependency not in INSTALLED_MODULES:
+            INSTALLED_MODULES.append(dependency)
