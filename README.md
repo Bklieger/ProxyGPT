@@ -136,14 +136,13 @@ v0.1.0:
 
 v0.1.1-beta:
 - Allow passing in multiple API keys for PROXYGPT_API_KEY
+- Create modules, starting with logging and graphics
 
 ## Future Features
 
 Add unit tests to entire codebase
 
 Allow multiple API keys with different rate limits in PROXYGPT_API_KEY
-
-Create graphics module for optionally recording and viewing statistics
 
 Allow use of production database
 
