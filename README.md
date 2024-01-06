@@ -9,6 +9,13 @@ The use of ProxyGPT is only recommended in development. In production, the rate 
 
 See [Installation](#installation) to get started.
 
+## Modules
+
+ProxyGPT comes with several modules, which are additional features beyond a simple proxy. These include logging and graphics, which allows full logging of the request and response for the API calls, and produces a dashboard for analyzing the results of the API calls.
+
+![Graphics Module](assets/graphics_module.png)
+
+
 ## Installation
 
 1. First, download the repository.
