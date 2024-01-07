@@ -134,8 +134,10 @@ v0.1.0-beta:
 v0.1.0:
 - Application Tested in Beta, README.md updated
 
-v0.1.1-beta:
+v0.1.1:
 - Allow passing in multiple API keys for PROXYGPT_API_KEY
+
+v0.2.0-beta:
 - Create modules, starting with logging and graphics
 
 ## Future Features

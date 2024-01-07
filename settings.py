@@ -2,7 +2,7 @@
 Settings.py file for ProxyGPT. This file contains the settings for the API.
 
 Author: Benjamin Klieger
-Version: 0.1.1-beta
+Version: 0.2.0-beta
 Date: 2024-01-05
 License: MIT
 """
