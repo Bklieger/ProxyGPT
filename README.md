@@ -5,8 +5,6 @@
 
 ProxyGPT is a dockerized lightweight OpenAI wrapper using FastAPI. This solution allows you to add custom hourly and daily rate limits to your OpenAI API usage, and share OpenAI access with your team without providing your secret key. This is a more secure option for sharing credentials during development, as OpenAI has yet to provide an API key-specific usage cap. You can confine OpenAI API usage through ProxyGPT with hourly and daily rate limits, in addition to only exposing specific endpoints of the OpenAI API. ProxyGPT also allows you the ability to reset or remove your team's access to the OpenAI API for only the services or people using a specific instance of ProxyGPT, rather than needing to reset the original OpenAI API key which could impact other projects if multiple services are using the same key (which is not recommended in production).
 
-The use of ProxyGPT is only recommended in development. In production, the rate limit logic used in this application can be copied to your own application. In addition, you should use seperate OpenAI API keys for different projects and services.
-
 See [Installation](#installation) to get started.
 
 ## Modules
